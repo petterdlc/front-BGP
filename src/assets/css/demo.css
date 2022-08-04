@@ -204,3 +204,11 @@
   outline: none;
   display: none;
 }
+
+#mynetwork {
+  width: 700px;
+  height: 600px;
+  border: 1px solid black;
+  background: white;
+  display: inline-block;
+}

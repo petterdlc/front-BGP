@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import Chart from 'chart.js';
+import { Network, DataSet, Node, Edge, IdType } from 'vis';
 
 
 @Component({
@@ -16,7 +17,14 @@ export class DashboardComponent implements OnInit{
   public chartEmail;
   public chartHours;
 
+  public nodes: Node;
+  public edges: Edge;
+  public network : Network;
+
+
+
     ngOnInit(){
+
       this.chartColor = "#FFFFFF";
 
       this.canvas = document.getElementById("chartHours");
@@ -204,6 +212,49 @@ export class DashboardComponent implements OnInit{
         hover: false,
         data: speedData,
         options: chartOptions
-      });
-    }
+      });  
+
+      var nodes = new DataSet([
+        {id: 1, label: 'model1-juniper', x:210, y: 200},
+        {id: 2, label: 'model2-cisco', x: 370, y: 150},
+        {id: 3, label: 'model3-juniper', x: 370, y: 250},
+        {id: 4, label: 'model4-cisco', x: 500, y: 200},
+        {id: 5, label: 'ISP1', x: 120, y: 200},
+        {id: 6, label: 'ISP2', x: 500, y: 100}
+    ]);
+      // create an array with edges
+      var edges = new DataSet([
+        {from: 1, to: 3},
+        {from: 1, to: 2},
+        {from: 1, to: 5},
+        {from: 2, to: 4},
+        {from: 3, to: 4},
+        {from: 4, to: 6}
+      ]);
+     // create a network
+    var container = document.getElementById('mynetwork');
+    var data = {
+      nodes: nodes,
+      edges: edges
+    };
+    var width = 600;
+    var height = 600;
+    var options = {
+        width: width + 'px',
+        height: height + 'px',
+        nodes: {
+            shape: 'dot'
+        },
+        edges: {
+            smooth: false
+        },
+        physics: false,
+        interaction: {
+            dragNodes: false,// do not allow dragging nodes
+            zoomView: false, // do not allow zooming
+            dragView: false  // do not allow dragging
+        }
+    };
+    var network = new Network(container, data, options);
+    } 
 }
