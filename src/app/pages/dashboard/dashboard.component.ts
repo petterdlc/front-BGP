@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import Chart from 'chart.js';
 import { Network, DataSet, Node, Edge, IdType } from 'vis';
+import Swal from 'sweetalert2'
 
 
 @Component({
@@ -24,6 +25,13 @@ export class DashboardComponent implements OnInit{
 
 
     ngOnInit(){
+
+      Swal.fire({
+        title: 'Anomalia!',
+        text: 'Port flap detectado en el router 1',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
 
       this.chartColor = "#FFFFFF";
 
@@ -214,22 +222,209 @@ export class DashboardComponent implements OnInit{
         options: chartOptions
       });  
 
-      var nodes = new DataSet([
-        {id: 1, label: 'model1-juniper', x:210, y: 200},
-        {id: 2, label: 'model2-cisco', x: 370, y: 150},
-        {id: 3, label: 'model3-juniper', x: 370, y: 250},
-        {id: 4, label: 'model4-cisco', x: 500, y: 200},
-        {id: 5, label: 'ISP1', x: 120, y: 200},
-        {id: 6, label: 'ISP2', x: 500, y: 100}
+      var endpointNetwork = [
+        {
+          name: 'T-GYE\n1.1.1.2',
+          tipo: "router",
+          id: 1,
+          interfaces:[
+            {
+              id:2,
+              label: "197.10.1.0/30",
+              up: true
+            },
+            {
+              id:3,
+              label: "197.10.3.0/30",
+              up: false
+            },
+            {
+              id:4,
+              label: "197.10.2.0/30",
+              up: true
+            },
+            {
+              id:6,
+              label: "10.10.1.0/30",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'T-UIO\n1.1.1.1',
+          tipo: "router",
+          id: 2,
+          interfaces:[
+            {
+              id:1,
+              label: "197.10.1.0/30",
+              up: true
+            },
+            {
+              id:4,
+              label: "197.10.4.0/30",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'T-CUE\n1.1.1.4',
+          tipo: "router",
+          id: 3,
+          interfaces:[
+            {
+              id:1,
+              label: "197.10.3.0/30",
+              up: false
+            },
+            {
+              id:4,
+              label: "197.10.5.0/30",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'T-ESM\n1.1.1.3',
+          tipo: "router",
+          id: 4,
+          interfaces:[
+            {
+              id:1,
+              label: "197.10.2.0/30",
+              up: true
+            },
+            {
+              id:2,
+              label: "197.10.4.0/30",
+              up: true
+            },
+            {
+              id:3,
+              label: "197.10.5.0/30",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'INTERNET',
+          tipo: "cloud",
+          id: 5,
+          interfaces:[
+            {
+              id:6,
+              label: "",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'ISP1\nAS-65001\n10.10.10.10',
+          tipo: "router",
+          id: 6,
+          interfaces:[
+            {
+              id:1,
+              label: "10.10.1.0/30",
+              up: true
+            },
+            {
+              id:5,
+              label: "",
+              up: true
+            },
+            {
+              id:7,
+              label: "",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'Switch1',
+          tipo: "switch2",
+          id: 7,
+          interfaces:[
+            {
+              id:6,
+              label: "-",
+              up: true
+            },
+            {
+              id:8,
+              label: "192.168.1.0/24",
+              up: true
+            }
+          ]
+        },
+        {
+          name: 'Monitoring  Server\n192.168.1.100',
+          tipo: "pc",
+          id: 8,
+          interfaces:[
+            {
+              id:7,
+              label: "192.168.1.0/24"
+              ,
+              up: true
+            }
+          ]
+        }
+      ];
+
+      var jsonNodes = [];
+      var jsonEdges = [];
+      var pos = [[450,-20],[210,150],[690,150],[450,310],[210,-300],[450,-300],[670,-300],[1000,-300]];
+      var labelsEdge  = [];
+
+      var url= "https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/";
+
+
+      for(var i = 0; i < endpointNetwork.length; i++) {
+        var obj = endpointNetwork[i];
+        var urlJ = url + obj["tipo"] +".jpg";
+        jsonNodes.push({id: obj["id"], label: obj["name"], shape: "image", image: urlJ, x: pos[i][0], y: pos[i][1]});
+        var interfaces = obj["interfaces"];
+        for(var j = 0; j < interfaces.length; j++) {
+          var int = interfaces[j];
+          if(!labelsEdge.includes(int["label"])){
+            if(int["up"]){
+              jsonEdges.push({from: obj["id"], to: int["id"], color:{color:'#39FF14'}, label: int["label"]});
+              labelsEdge.push(int["label"]);
+            }
+            else{
+              jsonEdges.push({from: obj["id"], to: int["id"], color:{color:'#ff0000'}, label: int["label"]});
+              labelsEdge.push(int["label"]);
+            }
+          }      
+        }
+      }
+
+      var nodes = new DataSet(jsonNodes);
+      var edges = new DataSet(jsonEdges);
+
+      var nodes2 = new DataSet([
+        {id: 1, label: 'T-GYE\n1.1.1.2',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/router.jpg", x: 450, y: -20},
+        {id: 2, label: 'T-UIO\n1.1.1.1',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/router.jpg", x: 210, y: 150},
+        {id: 3, label: 'T-CUE\n1.1.1.4',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/router.jpg", x: 690, y: 150},
+        {id: 4, label: 'T-ESM\n1.1.1.3',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/router.jpg", x: 450, y: 310},
+        {id: 5, label: 'INTERNET',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/cloud.jpg", x: 210, y: -300},
+        {id: 6, label: 'ISP1\nAS-65001\n10.10.10.10',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/router.jpg", x: 450, y: -300},
+        {id: 7, label: 'Switch1',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/switch2.jpg", x: 670, y: -300},
+        {id: 8, label: 'Monitoring  Server\n192.168.1.100',shape:"image",image:"https://raw.githubusercontent.com/petterdlc/front-BGP/master/src/assets/img/pc.jpg", x: 1000, y: -300}
     ]);
+
       // create an array with edges
-      var edges = new DataSet([
-        {from: 1, to: 3},
-        {from: 1, to: 2},
-        {from: 1, to: 5},
-        {from: 2, to: 4},
-        {from: 3, to: 4},
-        {from: 4, to: 6}
+      var edges2 = new DataSet([
+        {from: 1, to: 3, color:{color:'#ff0000'}, label:"197.10.3.0/30"},
+        {from: 1, to: 2, label:"197.10.1.0/30"},
+        {from: 1, to: 4, label:"197.10.2.0/30"},
+        {from: 2, to: 4, label:"197.10.4.0/30"},
+        {from: 3, to: 4, label:"197.10.5.0/30"},
+        {from: 1, to: 6, label:"10.10.1.0/30"},
+        {from: 5, to: 6},
+        {from: 6, to: 7},
+        {from: 7, to: 8, label:"192.168.1.0/24"}
       ]);
      // create a network
     var container = document.getElementById('mynetwork');
@@ -237,8 +432,8 @@ export class DashboardComponent implements OnInit{
       nodes: nodes,
       edges: edges
     };
-    var width = 600;
-    var height = 600;
+    var width = 1100;
+    var height = 1000;
     var options = {
         width: width + 'px',
         height: height + 'px',
@@ -250,11 +445,20 @@ export class DashboardComponent implements OnInit{
         },
         physics: false,
         interaction: {
-            dragNodes: false,// do not allow dragging nodes
+            dragNodes: true,// do not allow dragging nodes
             zoomView: false, // do not allow zooming
-            dragView: false  // do not allow dragging
+            dragView: true  // do not allow dragging
         }
     };
     var network = new Network(container, data, options);
+
+
+
+    
+    /**fetch("https://espol-smart-ac-control.herokuapp.com/ac_stats/ac1")
+      .then(res => res.json())
+      .then(res => {
+        console.log(res);
+      })**/
     } 
 }
